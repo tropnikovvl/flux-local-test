@@ -1,0 +1,11 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: hiddenmarten
+  namespace: flux-system
+spec:
+  type: "oci"
+  interval: 3h
+  url: oci://ghcr.io/hiddenmarten
+  timeout: 3m
