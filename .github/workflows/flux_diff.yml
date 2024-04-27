@@ -1,0 +1,38 @@
+---
+name: "Flux Diff"
+
+on:
+  pull_request:
+    branches: ["master"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diffs:
+    name: Compute diffs
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Setup Flux CLI
+        uses: fluxcd/flux2/action@main
+
+      - uses: allenporter/flux-local/action/diff@5.0.1
+        id: diff
+        with:
+          live-branch: master
+          path: clusters/dev
+          resource: helmrelease
+          debug: true
+
+      - name: PR Comments
+        uses: mshick/add-pr-comment@v2
+        if: ${{ steps.diff.outputs.diff != '' }}
+        with:
+          repo-token: ${{ secrets.GH_TOKEN }}
+          message-id: ${{ github.ref }}/flux-diff
+          message-failure: Unable to post HelmRelease diff
+          message: |
+            `````diff
+            ${{ steps.diff.outputs.diff }}
+            `````
